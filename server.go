@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"time"
 )
 
 func main() {
@@ -23,9 +24,15 @@ func main() {
 }
 
 func HandleServerConnection(ClientConnection net.Conn) {
-	var size uint32
 
-	err := binary.Read(ClientConnection, binary.LittleEndian, &size)
+	deadline := time.Now().Add(10 * time.Second) // Timeout set to 10 seconds
+	err := ClientConnection.SetReadDeadline(deadline)
+	if err != nil {
+		panic(err)
+	}
+
+	var size uint32
+	err = binary.Read(ClientConnection, binary.LittleEndian, &size)
 	if err != nil {
 		panic(err)
 	}

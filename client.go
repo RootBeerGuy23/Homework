@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 )
 
 func menu() {
@@ -13,6 +14,7 @@ func menu() {
 	for {
 		fmt.Println("1. Send Message")
 		fmt.Println("2. Exit")
+		fmt.Print(">>")
 		scanner.Scan()
 		choose := scanner.Text()
 		if choose == "1" {
@@ -30,7 +32,7 @@ func SendMessageMenu() {
 	var Message string
 
 	for {
-		fmt.Print("Input Message To Send")
+		fmt.Print("Input Message To Send: ")
 		scanner.Scan()
 		Message = scanner.Text()
 		break
@@ -45,14 +47,22 @@ func SendMessageToServer(Message string) {
 		panic(err)
 	}
 	defer ServerConn.Close()
+
+	deadline := time.Now().Add(5 * time.Second) // Timeout set to 5 seconds
+	err = ServerConn.SetDeadline(deadline)
+	if err != nil {
+		panic(err)
+	}
 	err = binary.Write(ServerConn, binary.LittleEndian, uint32(len(Message)))
 	if err != nil {
 		panic(err)
 	}
+
 	_, err = ServerConn.Write([]byte(Message))
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func main() {
